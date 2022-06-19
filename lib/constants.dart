@@ -12,3 +12,5 @@ const double defaultPadding = 20.0;
 int? playing = null;
 // ignore: avoid_init_to_null
 int? wannaplay = null;
+int? recentAyat = 0;
+int? recentSurah = 0;

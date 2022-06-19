@@ -4,9 +4,11 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:ti_lawah/constants.dart';
 import 'package:ti_lawah/screens/tafsir/home_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:confirm_dialog/confirm_dialog.dart';
 
 class AyatCard extends StatefulWidget {
-  const AyatCard({
+  AyatCard({
     Key? key,
     required this.audioId,
     required this.ayat,
@@ -18,7 +20,7 @@ class AyatCard extends StatefulWidget {
     required this.namaSurah,
   }) : super(key: key);
 
-  final int audioId, nomorAyat, idSurah;
+  int audioId, nomorAyat, idSurah;
   final String ayat, arti, namaSurah;
   final AudioPlayer audioPlayer;
   final AudioCache audioCache;
@@ -30,11 +32,34 @@ class AyatCard extends StatefulWidget {
 class _AyatCardState extends State<AyatCard> {
   ArabicNumbers arabicNumber = ArabicNumbers();
 
+//urusan penanda ayat
+//menyimpan idSurah,nama surah, dan nomor yang terakhir dibaca
+  void saveAyat(int idSurah, String namaSurah, int idAyat) async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    pref.setInt("idSurah", idSurah);
+    pref.setString("namaSurah", namaSurah);
+    pref.setInt("idAyat", idAyat);
+    setData(idSurah, idAyat);
+  }
+
+  void getRecent() async {
+    SharedPreferences pref = await SharedPreferences.getInstance();
+    recentAyat = await pref.getInt("idAyat");
+    recentSurah = await pref.getInt("idSurah");
+  }
+
+  void setData(int idSurah, int idAyat) async {
+    recentSurah = idSurah;
+    recentAyat = idAyat;
+    setState(() {});
+  }
+
 //urusan audio
   PlayerState playerState = PlayerState.PAUSED;
-  bool isPlaying = false;
-  bool isPaused = false;
+  bool isPlaying = false; // penanda apakah sedang diputar
+  bool isPaused = false; // penanda apakah sedang dipause
 
+//icon untuk tombol
   List<IconData> _icons = [
     Icons.pause_circle_filled,
     Icons.play_circle_fill,
@@ -42,13 +67,19 @@ class _AyatCardState extends State<AyatCard> {
 
   @override
   void initState() {
+    //memanggil fungsi set data
+    getRecent();
+
     super.initState();
 
+//menyimpan state audio
     widget.audioPlayer.onPlayerStateChanged.listen((PlayerState s) => {
           setState(() {
             playerState = s;
           }),
         });
+
+    //saat audio selesai diputar, playing dijadikan null
     widget.audioPlayer.onPlayerCompletion.listen((event) {
       setState(() {
         playing = null;
@@ -56,6 +87,7 @@ class _AyatCardState extends State<AyatCard> {
     });
   }
 
+//menandai ayat mana yg sedang diputar
   void prosesAudio(int? wannaplay) {
     if (playing == null) {
       playAudio();
@@ -67,12 +99,14 @@ class _AyatCardState extends State<AyatCard> {
     }
   }
 
+//mereset tombol dan playing
   void resetButton() {
     setState(() {
       playing = null;
     });
   }
 
+//memutar audio
   playAudio() async {
     await widget.audioCache.loop("audios/${widget.audioId}.mp3");
     setState(() {
@@ -80,6 +114,7 @@ class _AyatCardState extends State<AyatCard> {
     });
   }
 
+//pause audio
   pauseAudio() async {
     await widget.audioPlayer.pause();
     resetButton();
@@ -137,7 +172,26 @@ class _AyatCardState extends State<AyatCard> {
                       );
                     }));
                   }),
-              IconButton(icon: Icon(Icons.bookmark_border), onPressed: () {})
+              IconButton(
+                  icon: Icon(
+                    Icons.attachment_outlined,
+                    color: bluePrimary,
+                  ),
+                  onPressed: () async {
+                    if (await confirm(
+                      context,
+                      title: const Text('Confirm'),
+                      content: const Text('Tandai sebagai terakhir dibaca?'),
+                      textOK: const Text('Yes'),
+                      textCancel: const Text('No'),
+                    )) {
+                      saveAyat(
+                          widget.idSurah, widget.namaSurah, widget.nomorAyat);
+                      setState(() {
+                        getRecent();
+                      });
+                    }
+                  })
             ],
           ),
           Column(
