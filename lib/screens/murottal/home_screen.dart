@@ -1,6 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:ti_lawah/constants.dart';
 import 'package:ti_lawah/db/DBHelper.dart';
 import 'package:ti_lawah/models/Ayat.dart';

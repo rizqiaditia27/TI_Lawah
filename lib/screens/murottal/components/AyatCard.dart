@@ -112,6 +112,8 @@ class _AyatCardState extends State<AyatCard> {
     setState(() {
       playing = widget.audioId;
     });
+
+    //await widget.audioCache.loop("audios/${playing}.mp3");
   }
 
 //pause audio
