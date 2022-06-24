@@ -45,10 +45,13 @@ class _TafsirState extends State<Tafsir> {
             style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           Padding(padding: EdgeInsets.only(bottom: 15)),
-          Text(
-            tafsir,
-            textAlign: TextAlign.justify,
-            style: TextStyle(fontSize: 16),
+          Padding(
+            padding: const EdgeInsets.all(10.0),
+            child: Text(
+              tafsir,
+              textAlign: TextAlign.justify,
+              style: TextStyle(fontSize: 16),
+            ),
           ),
         ]),
       ),
